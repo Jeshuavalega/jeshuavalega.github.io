@@ -7,6 +7,5 @@ Guía interactiva sobre seguridad física en cuartos de telecomunicaciones (TIA-
 Publicar en GitHub Pages
 Sube index-v3.html (renómbralo a index.html) y este README.md a un repositorio.
 En Settings → Pages, elige la rama main y la carpeta / (root).
-La página quedará en https://<usuario>.github.io/<repositorio>/.
 
 Autor: Anubis Jeshua Valega Vanegas. Materia: Cableado Estructurado, grupo 54450. Docente: Danilo Andrés Rincón Plazas.
