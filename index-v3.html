@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arma tu cuarto de telecomunicaciones · v3</title>
+<meta name="description" content="Recorrido interactivo sobre seguridad física en cuartos de telecomunicaciones: acceso, clima, fuego, puesta a tierra y cableado.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF2EA; --grid:#D7E3D8; --ink:#1E2B45; --ink-soft:#4A5670;
+  --red:#B3302A; --green:#2B7044; --marker:#F6DA55; --copper:#B0622A;
+  --cable:#2A66AD; --seal:#D99A2B; --card:#F7FAF5;
+  --body:"Atkinson Hyperlegible", "Segoe UI", Verdana, sans-serif;
+  --hand:"Caveat", "Comic Sans MS", "Segoe Print", cursive;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#141E2C; --grid:#1F2C40; --ink:#E4EAF3; --ink-soft:#A8B5C8;
+    --red:#F2867B; --green:#74CC93; --marker:#7A6614; --copper:#E3A06A;
+    --cable:#7DB1EC; --seal:#E8B04F; --card:#1A2638;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; font-family:var(--body); font-size:1.05rem; line-height:1.55; color:var(--ink);
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:24px 24px;
+}
+a{color:var(--cable)}
+:focus-visible{outline:3px solid var(--cable); outline-offset:3px; border-radius:4px}
+.skip{position:absolute; left:-999px; top:0; background:var(--ink); color:var(--paper); padding:.5rem 1rem; z-index:100}
+.skip:focus{left:1rem; top:1rem}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+h1,h2,h3{line-height:1.15; margin:0 0 .5em}
+h1{font-size:clamp(2.3rem, 6vw, 4.2rem); letter-spacing:-.02em; max-width:14ch}
+h2{font-size:clamp(1.5rem, 3vw, 2.1rem)}
+h3{font-size:1.15rem}
+p{margin:0 0 .9em; max-width:62ch}
+.hand{font-family:var(--hand)}
+.wrap{max-width:1240px; margin:0 auto; padding:0 1.25rem}
+
+.btn{font:inherit; font-weight:700; color:var(--ink); background:var(--card); border:2px solid var(--ink); border-radius:8px; padding:.5rem 1rem; cursor:pointer; min-height:44px}
+.btn:hover{background:color-mix(in srgb, var(--marker) 45%, var(--card))}
+.btn[aria-pressed="true"], .btn.primary{background:var(--ink); color:var(--paper)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.4rem 0 .8rem}
+.ok{color:var(--green)} .warn{color:var(--copper)} .bad{color:var(--red)}
+.status{display:flex; gap:.6rem; align-items:flex-start; padding:.6rem .8rem; border-radius:8px; border:2px solid currentColor; margin:.5rem 0}
+.status .ico{font-weight:700; min-width:1.1em}
+.status span:last-child{color:var(--ink)}
+
+/* Portada */
+.hero{padding:3.5rem 0 1.5rem; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:2rem; align-items:center}
+.hero .sub{font-family:var(--hand); font-size:clamp(1.5rem,3vw,2.1rem); color:var(--red); transform:rotate(-1.5deg); display:inline-block; margin:-.2rem 0 1.2rem}
+.risks{display:flex; flex-wrap:wrap; gap:.6rem; margin:1rem 0 1.4rem; padding:0; list-style:none}
+.risks li{display:flex; align-items:center; gap:.4rem; border:2px solid var(--ink); border-radius:999px; padding:.3rem .8rem .3rem .4rem; background:var(--card); font-weight:700}
+.risks svg{width:26px; height:26px}
+.dato{border-left:6px solid var(--red); background:var(--card); padding:1rem 1.2rem; border-radius:0 10px 10px 0}
+.dato strong{font-size:2.6rem; display:block; line-height:1; color:var(--red)}
+
+/* Estación */
+.station{padding:1.5rem 0 3rem}
+.stepper{display:flex; gap:.5rem; flex-wrap:wrap; margin:0 0 1.2rem; padding:0; list-style:none}
+.stepper button{display:flex; align-items:center; gap:.5rem; font:inherit; font-weight:700; color:var(--ink); background:var(--card); border:2px solid var(--ink); border-radius:999px; padding:.35rem .9rem .35rem .4rem; cursor:pointer; min-height:44px}
+.stepper .num{display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; border:2px solid var(--ink); font-size:.9rem}
+.stepper button.done .num{background:var(--green); border-color:var(--green); color:var(--card)}
+.stepper button[aria-current="step"]{background:var(--ink); color:var(--paper)}
+.stepper button[aria-current="step"] .num{border-color:var(--paper)}
+.progress{font-family:var(--hand); font-size:1.5rem; margin:0 0 .6rem}
+
+.st-grid{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:1.6rem; align-items:start}
+.room-col{position:sticky; top:1rem}
+.room{width:100%; height:auto; display:block; color:var(--ink); background:color-mix(in srgb, var(--card) 70%, transparent); border:2px solid var(--ink); border-radius:12px}
+.hint{font-family:var(--hand); font-size:1.3rem; color:var(--ink-soft); margin:.3rem 0}
+.info{background:var(--card); border:2px solid var(--ink); border-radius:10px; padding:.8rem 1rem; min-height:5.2rem; margin-top:.5rem}
+.info strong{display:block; font-size:1.1rem}
+.info p{margin:0}
+
+.st{stroke:currentColor; fill:none; stroke-width:1.8; stroke-linejoin:round; stroke-linecap:round}
+.st2{stroke:currentColor; fill:none; stroke-width:2.6; stroke-linejoin:round}
+.f-paper{fill:var(--card)} .f-hatch{fill:url(#hatch)} .f-copper{fill:var(--copper)} .f-red{fill:var(--red)}
+.f-seal{fill:var(--seal)} .f-green{fill:var(--green)} .f-ink{fill:currentColor} .f-hole{fill:currentColor; opacity:.75}
+.w-green{stroke:var(--green); fill:none; stroke-width:3; stroke-linecap:round}
+.w-cable{stroke:var(--cable); fill:none; stroke-width:2.2; stroke-linecap:round}
+.w-power{stroke:var(--ink-soft); fill:none; stroke-width:7; stroke-linecap:round}
+.w-agent{stroke:var(--red); fill:none; stroke-width:1.6; stroke-dasharray:5 4}
+.w-air{stroke:var(--cable); fill:none; stroke-width:1.8; stroke-dasharray:4 5}
+.tiny{font-family:var(--body); font-size:9px; fill:currentColor; font-weight:700}
+.hand-s{font-family:var(--hand); font-size:13px; fill:currentColor}
+
+.cmp{cursor:pointer; transition:opacity .35s}
+.cmp.locked{display:none}
+.cmp.just{animation:pop .7s ease}
+@keyframes pop{0%{opacity:0; transform:translateY(-10px)}100%{opacity:1; transform:none}}
+.room.focus .cmp:not(.act){opacity:.3}
+.cmp:focus{outline:none}
+.cmp:focus-visible .halo, .cmp.sel .halo{stroke:var(--red); stroke-width:3; stroke-dasharray:5 4; fill:none}
+.halo{stroke:none; fill:transparent}
+.badge circle{fill:var(--red)}
+.badge text{fill:#fff; font:700 11px var(--body); text-anchor:middle; dominant-baseline:central}
+.nube{opacity:0; transition:opacity .6s}
+.room.discharge .nube{opacity:.65}
+
+/* Panel del tema */
+.topic{background:var(--card); border:2px solid var(--ink); border-radius:12px; padding:1.2rem 1.3rem}
+.topic .norma{display:inline-block; font-weight:700; font-size:.9rem; border:1.5px solid var(--ink-soft); color:var(--ink-soft); border-radius:6px; padding:.1rem .5rem; margin:0 .3rem .3rem 0}
+.idea{font-size:1.25rem; font-weight:700; max-width:40ch}
+.chips{display:flex; flex-wrap:wrap; gap:.4rem; margin:.4rem 0 1rem; padding:0; list-style:none}
+.chips button{display:flex; align-items:center; gap:.35rem; font:inherit; font-size:.95rem; color:var(--ink); background:var(--paper); border:1.5px solid var(--ink-soft); border-radius:999px; padding:.25rem .7rem .25rem .3rem; cursor:pointer; min-height:36px}
+.chips .n{display:inline-grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--red); color:#fff; font-size:.8rem; font-weight:700}
+[role=tablist]{display:flex; gap:.3rem; border-bottom:2px solid var(--ink); margin-bottom:1rem}
+[role=tab]{font:inherit; font-weight:700; color:var(--ink-soft); background:none; border:2px solid transparent; border-bottom:0; border-radius:8px 8px 0 0; padding:.5rem .9rem; cursor:pointer; margin-bottom:-2px; min-height:44px}
+[role=tab][aria-selected="true"]{color:var(--ink); background:var(--card); border-color:var(--ink); border-bottom:2px solid var(--card)}
+[role=tabpanel][hidden]{display:none}
+
+.flips{display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:.7rem}
+.flip{perspective:900px; background:none; border:0; padding:0; cursor:pointer; font:inherit; color:var(--ink); min-height:150px; text-align:left}
+.flip .in{position:relative; display:block; width:100%; height:100%; min-height:150px; transition:transform .5s; transform-style:preserve-3d}
+.flip[aria-pressed="true"] .in{transform:rotateY(180deg)}
+.flip .fa,.flip .fb{position:absolute; inset:0; backface-visibility:hidden; border:2px solid var(--ink); border-radius:10px; padding:.8rem; display:flex; flex-direction:column; justify-content:space-between}
+.flip .fa{background:var(--paper)}
+.flip .fa b{font-size:1.05rem}
+.flip .fa small{font-family:var(--hand); font-size:1.15rem; color:var(--ink-soft)}
+.flip .fb{background:var(--ink); color:var(--paper); transform:rotateY(180deg); font-size:.98rem}
+@media (prefers-reduced-motion: reduce){
+  .flip .in{transition:none}
+  .flip[aria-pressed="true"] .in{transform:none}
+  .flip .fb{transform:none; display:none}
+  .flip[aria-pressed="true"] .fb{display:flex} .flip[aria-pressed="true"] .fa{display:none}
+  .cmp.just{animation:none}
+}
+
+.try[hidden]{display:none}
+.row{display:grid; gap:.2rem; margin-bottom:.8rem}
+label{font-weight:700}
+input[type=range]{width:100%; accent-color:var(--cable); height:2rem}
+.people{display:grid; gap:.5rem}
+.people .btn{text-align:left; font-weight:400}
+.people .btn b{display:block}
+.checks{list-style:none; padding:0; margin:.6rem 0}
+.checks li{padding:.2rem 0; font-weight:700}
+.seq{list-style:none; padding:0; margin:.6rem 0; counter-reset:s}
+.seq li{counter-increment:s; padding:.4rem .6rem; border-radius:6px; opacity:.45; display:flex; gap:.5rem}
+.seq li::before{content:counter(s); font-weight:700; min-width:1.2em}
+.seq li.on{opacity:1; background:var(--marker)}
+.seq li.past{opacity:1}
+.firedemo svg,.gdemo svg{width:100%; height:auto; display:block; color:var(--ink)}
+.firedemo .seal{opacity:0; transition:opacity .4s}
+.firedemo[data-sealed="true"] .seal{opacity:1}
+.smoke circle{fill:var(--ink-soft); opacity:0; animation:pass 3.2s linear infinite}
+.smoke circle:nth-child(2){animation-delay:.8s} .smoke circle:nth-child(3){animation-delay:1.6s} .smoke circle:nth-child(4){animation-delay:2.4s}
+.firedemo[data-sealed="true"] .smoke circle{animation-name:blocked}
+@keyframes pass{0%{transform:translateX(0);opacity:.7}100%{transform:translateX(190px);opacity:0}}
+@keyframes blocked{0%{transform:translate(0,0);opacity:.7}55%{transform:translate(42px,-4px);opacity:.6}100%{transform:translate(36px,-45px);opacity:0}}
+.gpart{cursor:pointer}
+.gpart.hl{stroke:var(--red) !important; stroke-width:5 !important}
+.track{position:relative; height:30px; border:2px solid var(--ink); border-radius:6px; overflow:hidden; display:flex; background:var(--paper); margin:1.5rem 0 .3rem}
+.seg-perm{background:var(--cable)}
+.seg-patch{background:repeating-linear-gradient(45deg, var(--copper) 0 6px, transparent 6px 10px)}
+.limit{position:absolute; top:0; bottom:0; border-left:3px dashed var(--red); left:76.923%}
+.track-wrap{position:relative}
+.limit-label{position:absolute; top:-1.45rem; left:76.923%; transform:translateX(-50%); font-family:var(--hand); font-size:1.2rem; color:var(--red)}
+.emi{position:relative; height:90px; border:2px solid var(--ink); border-radius:8px; background:var(--paper); margin:.6rem 0}
+.emi .ln{position:absolute; left:8%; right:8%; height:8px; border-radius:4px}
+.emi .pw{top:18px; background:var(--ink-soft)}
+.emi .dt{background:var(--cable); transition:top .3s}
+.emi .lab{position:absolute; left:8%; font-size:.8rem; font-weight:700}
+hr.div{border:0; border-top:2px dashed var(--ink-soft); margin:1.2rem 0}
+
+.media{display:grid; gap:1rem}
+.video{position:relative; aspect-ratio:16/9; border:2px solid var(--ink); border-radius:10px; overflow:hidden; background:var(--paper)}
+.video button{all:unset; cursor:pointer; position:absolute; inset:0; display:block}
+.video img{width:100%; height:100%; object-fit:cover; display:block}
+.video .play{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:68px; height:48px; border-radius:12px; background:var(--red); display:grid; place-items:center}
+.video .play::after{content:""; border-left:18px solid #fff; border-top:11px solid transparent; border-bottom:11px solid transparent; margin-left:4px}
+.video iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.placeholder{position:absolute; inset:0; display:grid; place-content:center; text-align:center; gap:.5rem; padding:1rem; border:0; background:repeating-linear-gradient(-45deg, transparent 0 12px, color-mix(in srgb, var(--grid) 80%, transparent) 12px 14px)}
+.placeholder p{margin:0 auto; font-family:var(--hand); font-size:1.4rem}
+.foto{border:2px solid var(--ink); border-radius:10px; overflow:hidden; background:var(--paper); position:relative; aspect-ratio:4/3}
+.foto img{width:100%; height:100%; object-fit:cover; display:block}
+.foto figcaption{font-size:.9rem; padding:.4rem .6rem; background:var(--card); position:absolute; bottom:0; left:0; right:0}
+.nextrow{display:flex; justify-content:space-between; gap:.5rem; margin-top:1.2rem; flex-wrap:wrap}
+
+/* v3 */
+.stepper button.done{border-color:var(--green); background:color-mix(in srgb, var(--green) 16%, var(--card))}
+.stepper button.done .num{font-size:1rem}
+.stepper button.done[aria-current="step"]{background:var(--ink); color:var(--paper)}
+[role=tablist]{flex-wrap:wrap}
+.teoria p{max-width:60ch}
+.teoria mark{background:linear-gradient(transparent 35%, var(--marker) 35%, var(--marker) 85%, transparent 85%); color:inherit; padding:0 .15em}
+.terms{margin:.6rem 0 0; border-top:2px dashed var(--ink-soft); padding-top:.6rem}
+.terms dt{font-weight:700; margin-top:.5rem}
+.terms dd{margin:0 0 .2rem}
+.thumb{display:flex; gap:.8rem; align-items:center; width:100%; text-align:left; font:inherit; color:var(--ink); background:var(--paper); border:2px solid var(--ink); border-radius:10px; padding:.5rem; cursor:pointer; margin:.4rem 0 1rem}
+.thumb img{width:140px; aspect-ratio:16/9; object-fit:cover; border-radius:6px; flex:none}
+.thumb span{font-weight:700}
+.thumb small{display:block; font-weight:400; color:var(--ink-soft)}
+.vcap{font-size:.95rem; margin:.4rem 0 0}
+#fx{pointer-events:none}
+#alarmOverlay{opacity:0}
+.room.alarm #alarmOverlay{opacity:.15; animation:alarmPulse 1s ease-in-out infinite}
+@keyframes alarmPulse{0%,100%{opacity:.06}50%{opacity:.32}}
+#flame{opacity:0; transition:opacity .4s}
+.room.fire #flame{opacity:1}
+.room.fire #flame path{animation:flick .35s ease-in-out infinite alternate; transform-origin:300px 296px}
+@keyframes flick{from{transform:scaleY(.92)}to{transform:scaleY(1.06)}}
+#strobe{opacity:0}
+.room.alarm #strobe{animation:strobe .5s steps(2) infinite}
+@keyframes strobe{0%{opacity:1}100%{opacity:0}}
+#countdown{opacity:0; font:700 110px var(--body); fill:var(--red); stroke:var(--card); stroke-width:6; paint-order:stroke}
+.topic.alarm{border-color:var(--red); box-shadow:0 0 0 4px color-mix(in srgb, var(--red) 35%, transparent)}
+.emi{height:110px}
+.emi .req{position:absolute; left:8%; right:8%; border-top:2px dashed var(--red)}
+.emi .req span{position:absolute; right:0; top:-1.3rem; font-family:var(--hand); font-size:1.15rem; color:var(--red)}
+.lives{font-size:1.6rem; color:var(--red); margin:0 0 .6rem; letter-spacing:.2em}
+.mision{border-left:6px solid var(--marker); background:var(--card); padding:.8rem 1rem; border-radius:0 10px 10px 0; max-width:70ch}
+@media (prefers-reduced-motion: reduce){.room.alarm #alarmOverlay{opacity:.18} .room.alarm #strobe{opacity:1}}
+
+/* Reto (de la v1) */
+.full{max-width:1240px; margin:0 auto; padding:3.5rem 1.25rem; border-top:2px dashed var(--ink-soft)}
+.reto-grid{display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:2rem; align-items:start}
+.scene{position:relative}
+.scene svg{width:100%; height:auto; display:block; color:var(--ink)}
+.scene .st{stroke-width:1.6}
+.scene .w-power{stroke-width:5} .scene .w-cable{stroke-width:1.8}
+.w-pipe{stroke:var(--cable); fill:none; stroke-width:7; opacity:.55}
+.scene .hand{font-size:11px; fill:currentColor}
+.spot{position:absolute; width:38px; height:38px; transform:translate(-50%,-50%); border-radius:50%; border:2.5px dashed var(--ink); background:transparent; cursor:pointer; font:700 1rem var(--body); color:var(--ink); padding:0}
+.spot:hover{background:color-mix(in srgb, var(--marker) 55%, transparent)}
+.spot.is-bad{border-style:solid; border-color:var(--red); background:var(--card); color:var(--red)}
+.spot.is-ok{border-style:solid; border-color:var(--green); background:var(--card); color:var(--green)}
+.counter{font-family:var(--hand); font-size:1.8rem; margin:0 0 .5rem}
+.panel{background:var(--card); border:2px solid var(--ink); border-radius:10px; padding:1.1rem 1.2rem; margin:1rem 0}
+.feedback{min-height:9rem}
+
+/* Quiz */
+.quiz{max-width:640px}
+.qbar{height:10px; border:2px solid var(--ink); border-radius:999px; overflow:hidden; margin:.5rem 0 1rem}
+.qbar span{display:block; height:100%; background:var(--green); transition:width .4s}
+.qopts{display:grid; gap:.5rem; margin:1rem 0}
+.qopts .btn{text-align:left; font-weight:400}
+.qopts .btn.right{border-color:var(--green); background:color-mix(in srgb, var(--green) 18%, var(--card))}
+.qopts .btn.wrong{border-color:var(--red); background:color-mix(in srgb, var(--red) 15%, var(--card))}
+.big{font-family:var(--hand); font-size:2.6rem; margin:.2rem 0}
+
+.refs{padding:0} .refs li{list-style:none; margin-bottom:.6rem; padding-left:2em; text-indent:-2em; max-width:75ch}
+footer{padding:2rem 1.25rem 4rem; color:var(--ink-soft); max-width:1240px; margin:0 auto}
+
+@media (max-width:900px){
+  .hero,.st-grid,.reto-grid{grid-template-columns:1fr}
+  .room-col{position:static}
+}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} *{animation:none !important; transition:none !important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#estacion">Saltar al recorrido</a>
+
+<header class="wrap hero">
+  <div>
+    <h1>Arma tu cuarto de telecomunicaciones</h1>
+    <span class="sub">(sin que se moje, se queme ni se lo roben)</span>
+    <p>Un cuarto de telecomunicaciones es donde llegan los cables de un piso y viven switches, patch panels y servidores. Tiene cinco enemigos:</p>
+    <ul class="risks">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c1-5 15-5 16 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>Personas</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/><circle cx="12" cy="18" r="3.5" fill="var(--red)"/></svg>Calor</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 6 6 9 6 12a6 6 0 0 1-12 0c0-3 2-6 6-12z" fill="var(--cable)"/></svg>Agua</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 5 6 6 6 12a6 6 0 0 1-12 0c0-3 2-4 3-6 1 2 2 3 3 3-1-3-1-6 0-9z" fill="var(--copper)"/></svg>Fuego</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 5 14h6l-1 8 8-12h-6z" fill="var(--seal)" stroke="currentColor" stroke-width="1"/></svg>Electricidad</li>
+    </ul>
+    <a class="btn primary" href="#estacion" style="text-decoration:none; display:inline-block">Empezar a armar</a>
+  </div>
+  <div class="dato">
+    <strong>Marzo 2021</strong>
+    <p>Un incendio destruyó un centro de datos de OVHcloud en Estrasburgo (Francia) y dejó fuera de línea a millones de sitios web.</p>
+    <p class="hand" style="font-size:1.35rem; color:var(--red); margin:0">Un cuarto de telecom es más pequeño, pero los riesgos son los mismos.</p>
+  </div>
+</header>
+
+<main>
+<section class="wrap station" id="estacion" aria-labelledby="tEst">
+  <h2 id="tEst">El recorrido</h2>
+  <p class="progress" id="progress" aria-live="polite">Cuarto armado: 0 de 5 capas</p>
+  <nav aria-label="Temas del recorrido"><ol class="stepper" id="stepper"></ol></nav>
+
+  <div class="st-grid">
+    <div class="room-col">
+      <svg class="room focus" id="room" viewBox="0 0 600 330" role="group" aria-label="Dibujo del cuarto de telecomunicaciones. Cada elemento se puede seleccionar para ver qué es.">
+        <defs>
+          <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="7" stroke="currentColor" stroke-width="1" opacity=".35"/>
+          </pattern>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <!-- estructura -->
+        <rect x="0" y="0" width="600" height="24" class="f-hatch"/><path d="M0 24 H600" class="st"/>
+        <rect x="0" y="300" width="600" height="30" class="f-hatch"/><path d="M0 300 H600" class="st"/>
+        <rect x="0" y="24" width="18" height="276" class="f-hatch"/><path d="M18 24 V300" class="st"/>
+        <rect x="582" y="24" width="18" height="276" class="f-hatch"/><path d="M582 24 V300" class="st"/>
+        <rect x="582" y="92" width="18" height="20" class="f-hole"/>
+
+        <!-- rack (siempre) -->
+        <g class="cmp" data-id="rack" tabindex="0" role="button">
+          <rect class="halo" x="244" y="114" width="112" height="192" rx="6"/>
+          <rect x="250" y="120" width="100" height="180" rx="3" class="f-paper st2"/>
+          <rect x="258" y="156" width="84" height="14" class="st"/><rect x="258" y="174" width="84" height="14" class="st"/>
+          <path d="M266 163h2 M274 163h2 M282 163h2 M290 163h2 M298 163h2 M266 181h2 M274 181h2 M282 181h2 M290 181h2" class="st" style="stroke:var(--green)"/>
+          <rect x="258" y="200" width="84" height="28" class="st"/><rect x="258" y="234" width="84" height="28" class="st"/>
+          <path d="M268 208v12 M274 208v12 M280 208v12 M268 242v12 M274 242v12 M280 242v12" class="st" opacity=".6"/>
+        </g>
+
+        <!-- ACCESO -->
+        <g class="cmp" data-id="puerta" tabindex="0" role="button">
+          <rect class="halo" x="44" y="144" width="102" height="160" rx="6"/>
+          <rect x="50" y="150" width="90" height="150" class="f-paper st2"/>
+          <rect x="62" y="164" width="66" height="54" class="st" opacity=".5"/>
+          <circle cx="128" cy="232" r="4.5" class="f-ink"/>
+          <path d="M60 156 h34 l10 -6" class="st"/>
+        </g>
+        <g class="cmp" data-id="lector" tabindex="0" role="button">
+          <rect class="halo" x="143" y="195" width="28" height="44" rx="5"/>
+          <rect x="148" y="200" width="18" height="34" rx="3" class="f-paper st"/>
+          <rect x="151" y="204" width="12" height="7" rx="1" class="st"/>
+          <path d="M153 230 a4 4 0 0 1 8 0 M151 231 a6 6 0 0 1 12 0 M155 229 a2 2 0 0 1 4 0" class="st" style="stroke-width:1.2"/>
+        </g>
+        <g class="cmp" data-id="camara" tabindex="0" role="button">
+          <rect class="halo" x="20" y="28" width="52" height="24" rx="5"/>
+          <path d="M18 40 h10" class="st2"/>
+          <rect x="28" y="33" width="32" height="14" rx="3" class="f-paper st"/>
+          <circle cx="64" cy="40" r="4" class="f-ink"/>
+        </g>
+        <g class="cmp" data-id="muro" tabindex="0" role="button">
+          <rect class="halo" x="22" y="56" width="20" height="244" rx="5"/>
+          <path d="M32 62 V294" class="st" marker-start="url(#arr)" marker-end="url(#arr)"/>
+        </g>
+        <g class="cmp" data-id="candado" tabindex="0" role="button">
+          <rect class="halo" x="328" y="202" width="24" height="28" rx="5"/>
+          <path d="M335 214 v-4 a5 5 0 0 1 10 0 v4" class="st"/>
+          <rect x="332" y="214" width="16" height="12" rx="2" class="f-copper"/>
+        </g>
+
+        <!-- CLIMA -->
+        <g class="cmp" data-id="aire" tabindex="0" role="button">
+          <rect class="halo" x="424" y="124" width="132" height="52" rx="6"/>
+          <rect x="430" y="130" width="120" height="40" rx="5" class="f-paper st2"/>
+          <rect x="440" y="137" width="22" height="9" rx="1" class="st"/>
+          <path d="M442 157 h98 M442 163 h98" class="st"/>
+          <path d="M460 174 L436 222" class="w-air" marker-end="url(#arr)" style="color:var(--cable)"/>
+          <path d="M520 174 L506 226" class="w-air" marker-end="url(#arr)" style="color:var(--cable)"/>
+        </g>
+        <g class="cmp" data-id="sensorth" tabindex="0" role="button">
+          <rect class="halo" x="181" y="121" width="50" height="56" rx="6"/>
+          <rect x="186" y="126" width="40" height="46" rx="4" class="f-paper st"/>
+          <text x="206" y="145" text-anchor="middle" class="tiny">22 °C</text>
+          <text x="206" y="161" text-anchor="middle" class="tiny">45 %</text>
+        </g>
+        <g class="cmp" data-id="fuga" tabindex="0" role="button">
+          <rect class="halo" x="374" y="284" width="152" height="16" rx="5"/>
+          <rect x="380" y="289" width="18" height="9" rx="1" class="f-paper st"/>
+          <path d="M398 296 H520" class="w-cable" stroke-dasharray="2 3"/>
+        </g>
+
+        <!-- FUEGO -->
+        <g class="cmp" data-id="detector" tabindex="0" role="button">
+          <rect class="halo" x="155" y="22" width="46" height="20" rx="5"/>
+          <path d="M160 24 a18 12 0 0 0 36 0 z" class="f-paper st"/>
+          <circle cx="178" cy="30" r="2.5" class="f-red"/>
+        </g>
+        <g class="cmp" data-id="boquilla" tabindex="0" role="button">
+          <rect class="halo" x="388" y="22" width="24" height="26" rx="5"/>
+          <path d="M400 24 v10 M392 44 l8 -10 l8 10 z" class="st"/>
+          <path d="M404 28 H564 V200" class="w-agent"/>
+          <g class="nube" style="color:var(--ink-soft)">
+            <ellipse cx="400" cy="70" rx="40" ry="16" class="f-ink" opacity=".35"/>
+            <ellipse cx="370" cy="95" rx="50" ry="18" class="f-ink" opacity=".25"/>
+            <ellipse cx="440" cy="92" rx="45" ry="16" class="f-ink" opacity=".25"/>
+          </g>
+        </g>
+        <g class="cmp" data-id="cilindro" tabindex="0" role="button">
+          <rect class="halo" x="548" y="194" width="32" height="108" rx="8"/>
+          <rect x="552" y="200" width="24" height="98" rx="10" class="f-red" opacity=".9"/>
+          <circle cx="564" cy="214" r="5" class="f-paper"/>
+        </g>
+        <g class="cmp" data-id="sellado" tabindex="0" role="button">
+          <rect class="halo" x="577" y="87" width="23" height="30" rx="4"/>
+          <rect x="582" y="92" width="18" height="20" class="f-seal"/>
+        </g>
+
+        <!-- TIERRA -->
+        <g class="cmp" data-id="tgb" tabindex="0" role="button">
+          <rect class="halo" x="175" y="264" width="72" height="22" rx="5"/>
+          <rect x="180" y="270" width="62" height="10" class="f-copper"/>
+          <circle cx="190" cy="275" r="1.8" class="f-paper"/><circle cx="204" cy="275" r="1.8" class="f-paper"/><circle cx="218" cy="275" r="1.8" class="f-paper"/><circle cx="232" cy="275" r="1.8" class="f-paper"/>
+        </g>
+        <g class="cmp" data-id="union" tabindex="0" role="button">
+          <rect class="halo" x="238" y="268" width="16" height="14" rx="4"/>
+          <path d="M242 275 H250" class="w-green"/>
+        </g>
+        <g class="cmp" data-id="unionb" tabindex="0" role="button">
+          <rect class="halo" x="170" y="102" width="14" height="172" rx="4"/>
+          <path d="M180 272 H176 V104" class="w-green"/>
+        </g>
+        <g class="cmp" data-id="tbb" tabindex="0" role="button">
+          <rect class="halo" x="208" y="278" width="16" height="48" rx="4"/>
+          <path d="M216 280 V318" class="w-green" style="stroke-width:5"/>
+        </g>
+
+        <!-- CABLEADO -->
+        <g class="cmp" data-id="bandeja" tabindex="0" role="button">
+          <rect class="halo" x="18" y="86" width="564" height="24" rx="5"/>
+          <path d="M18 92 H582 M18 104 H582" class="st"/>
+          <path d="M38 92v12 M58 92v12 M78 92v12 M98 92v12 M118 92v12 M138 92v12 M158 92v12 M198 92v12 M218 92v12 M238 92v12 M258 92v12 M278 92v12 M298 92v12 M318 92v12 M338 92v12 M358 92v12 M378 92v12 M398 92v12 M418 92v12 M438 92v12 M458 92v12 M478 92v12 M498 92v12 M518 92v12 M538 92v12 M558 92v12" class="st" opacity=".5"/>
+          <path d="M270 104 V120 M285 104 V120 M300 104 V120 M315 104 V120 M330 104 V120" class="w-cable"/>
+          <path d="M440 96 H600" class="w-cable" opacity=".8"/>
+        </g>
+        <g class="cmp" data-id="patch" tabindex="0" role="button">
+          <rect class="halo" x="253" y="126" width="94" height="24" rx="4"/>
+          <rect x="258" y="130" width="84" height="16" class="f-paper st"/>
+          <path d="M264 138h4 M272 138h4 M280 138h4 M288 138h4 M296 138h4 M304 138h4 M312 138h4 M320 138h4 M328 138h4" class="st" style="stroke-width:3"/>
+        </g>
+        <g class="cmp" data-id="etiquetas" tabindex="0" role="button">
+          <rect class="halo" x="262" y="106" width="76" height="12" rx="3"/>
+          <rect x="265" y="108" width="10" height="7" style="fill:var(--marker)" stroke="currentColor" stroke-width=".8"/>
+          <rect x="295" y="108" width="10" height="7" style="fill:var(--marker)" stroke="currentColor" stroke-width=".8"/>
+          <rect x="325" y="108" width="10" height="7" style="fill:var(--marker)" stroke="currentColor" stroke-width=".8"/>
+        </g>
+        <g class="cmp" data-id="fuerza" tabindex="0" role="button">
+          <rect class="halo" x="18" y="46" width="394" height="44" rx="5"/>
+          <path d="M18 60 H380" class="w-power"/>
+          <rect x="380" y="50" width="28" height="20" rx="2" class="f-paper st"/>
+          <path d="M392 54 l-4 6 h6 l-4 6" class="st" style="stroke:var(--seal)"/>
+          <path d="M110 66 V88 M105 66 H115 M105 88 H115" class="st" style="stroke:var(--red)"/>
+        </g>
+        <g class="cmp" data-id="anclaje" tabindex="0" role="button">
+          <rect class="halo" x="246" y="290" width="108" height="14" rx="4"/>
+          <rect x="252" y="295" width="12" height="6" class="f-ink"/><rect x="336" y="295" width="12" height="6" class="f-ink"/>
+        </g>
+        <g id="fx" aria-hidden="true">
+          <rect id="alarmOverlay" x="18" y="24" width="564" height="276" fill="var(--red)"/>
+          <g id="flame"><path d="M300 298 q-14 -26 4 -44 q-1 14 8 18 q0 -20 12 -32 q3 22 12 27 q5 -10 2 -17 q18 20 5 48 z" fill="var(--copper)"/><path d="M308 298 q-6 -12 2 -20 q1 8 6 9 q2 -6 0 -10 q10 10 2 21 z" fill="var(--seal)"/></g>
+          <g id="strobe"><rect x="212" y="26" width="18" height="10" rx="2" fill="var(--red)"/><circle cx="221" cy="31" r="10" fill="var(--red)" opacity=".35"/></g>
+          <text id="countdown" x="300" y="220" text-anchor="middle">3</text>
+        </g>
+        <g id="badges"></g>
+      </svg>
+      <p class="hint">Toca cualquier elemento del dibujo para saber qué es.</p>
+      <div class="info" id="info" aria-live="polite"><strong>Rack</strong><p>Selecciona un elemento del dibujo o de la lista.</p></div>
+    </div>
+
+    <div class="topic" id="topic">
+      <h3 id="tTitle" tabindex="-1"></h3>
+      <div id="tNormas"></div>
+      <p class="idea" id="tIdea"></p>
+      <p style="margin:.4rem 0 0; font-weight:700">En el dibujo:</p>
+      <ul class="chips" id="tChips"></ul>
+
+      <div role="tablist" aria-label="Contenido del tema">
+        <button role="tab" id="tab-esencial" aria-controls="p-esencial" aria-selected="true">Lo esencial</button>
+        <button role="tab" id="tab-clave" aria-controls="p-clave" aria-selected="false" tabindex="-1">Repaso</button>
+        <button role="tab" id="tab-prueba" aria-controls="p-prueba" aria-selected="false" tabindex="-1">Pruébalo</button>
+        <button role="tab" id="tab-media" aria-controls="p-media" aria-selected="false" tabindex="-1">Video</button>
+      </div>
+
+      <div role="tabpanel" id="p-esencial" aria-labelledby="tab-esencial">
+        <div class="teoria" id="tTeoria"></div>
+      </div>
+
+      <div role="tabpanel" id="p-clave" aria-labelledby="tab-clave" hidden>
+        <p class="hand" style="font-size:1.3rem; color:var(--ink-soft); margin:0 0 .5rem">Toca cada tarjeta para voltearla</p>
+        <div class="flips" id="tFlips"></div>
+      </div>
+
+      <div role="tabpanel" id="p-prueba" aria-labelledby="tab-prueba" hidden>
+        <!-- ACCESO -->
+        <div class="try" data-topic="acceso">
+          <h3>¿Quién puede entrar?</h3>
+          <p>Elige quién intenta abrir la puerta:</p>
+          <div class="people">
+            <button class="btn" type="button" data-person="ana"><b>Ana, técnica de redes</b>Tiene su tarjeta y su huella registrada.</button>
+            <button class="btn" type="button" data-person="visita"><b>Un visitante</b>No tiene tarjeta ni está registrado.</button>
+            <button class="btn" type="button" data-person="prestada"><b>Alguien con una tarjeta prestada</b>La tarjeta es válida, pero no es su huella.</button>
+          </div>
+          <div id="accessOut" aria-live="polite"></div>
+        </div>
+        <!-- CLIMA -->
+        <div class="try" data-topic="clima" hidden>
+          <h3>Ajusta el ambiente del cuarto</h3>
+          <div class="row"><label for="temp">Temperatura: <output id="tempOut" for="temp">22</output> °C</label><input type="range" id="temp" min="10" max="40" value="22"></div>
+          <div class="row"><label for="hum">Humedad: <output id="humOut" for="hum">45</output> %</label><input type="range" id="hum" min="10" max="90" value="45"></div>
+          <div aria-live="polite"><div class="status" id="tStatus"></div><div class="status" id="hStatus"></div></div>
+        </div>
+        <!-- FUEGO -->
+        <div class="try" data-topic="fuego" hidden>
+          <h3>Simula un incendio</h3>
+          <p>Mira el dibujo del cuarto mientras corre la simulación.</p>
+          <div class="btn-row">
+            <button class="btn primary" type="button" id="fireRun">Simular incendio</button>
+            <button class="btn" type="button" id="soundBtn" aria-pressed="true">Sonido activado</button>
+          </div>
+          <ol class="seq" id="fireSeq">
+            <li>El detector siente el humo.</li>
+            <li>Suena la alarma y se evacúa el cuarto.</li>
+            <li>Cuenta regresiva para que todos salgan.</li>
+            <li>Se descarga el agente limpio por la boquilla.</li>
+            <li>Fuego apagado, sin agua ni residuos sobre los equipos.</li>
+          </ol>
+          <p class="sr" id="fireLive" aria-live="polite"></p>
+          <hr class="div">
+          <h3>El hueco del cable</h3>
+          <div class="firedemo" id="fire" data-sealed="false">
+            <div class="btn-row" role="group" aria-label="Estado del paso de cables">
+              <button class="btn" type="button" data-seal="false" aria-pressed="true">Sin sellar</button>
+              <button class="btn" type="button" data-seal="true" aria-pressed="false">Con sellado</button>
+            </div>
+            <svg viewBox="0 0 320 140" aria-hidden="true" focusable="false">
+              <text x="70" y="22" text-anchor="middle" class="hand-s">cuarto vecino</text>
+              <text x="245" y="22" text-anchor="middle" class="hand-s">tu cuarto</text>
+              <rect x="150" y="30" width="20" height="104" class="f-hatch st"/>
+              <rect x="150" y="60" width="20" height="20" class="f-hole"/>
+              <path d="M20 66 H300 M20 70 H300 M20 74 H300" class="w-cable"/>
+              <rect x="150" y="60" width="20" height="20" class="seal f-seal"/>
+              <path d="M40 132 q-6 -24 8 -38 q-2 14 8 18 q0 -18 12 -30 q2 22 12 26 q4 -10 2 -18 q16 18 6 42 z" class="f-red" opacity=".85"/>
+              <g class="smoke"><circle cx="98" cy="70" r="7"/><circle cx="98" cy="68" r="5"/><circle cx="98" cy="72" r="8"/><circle cx="98" cy="70" r="6"/></g>
+            </svg>
+            <p id="fireText" aria-live="polite"></p>
+          </div>
+        </div>
+        <!-- TIERRA -->
+        <div class="try gdemo" data-topic="tierra" id="ground" hidden>
+          <h3>El sistema de tierra de un edificio</h3>
+          <div class="btn-row" role="group" aria-label="Partes del sistema de puesta a tierra">
+            <button class="btn" type="button" data-part="tmgb" aria-pressed="false">TMGB</button>
+            <button class="btn" type="button" data-part="tgb" aria-pressed="false">TGB</button>
+            <button class="btn" type="button" data-part="tbb" aria-pressed="false">TBB</button>
+            <button class="btn" type="button" data-part="bct" aria-pressed="false">BCT</button>
+            <button class="btn" type="button" data-part="electrodo" aria-pressed="false">Electrodo</button>
+          </div>
+          <svg viewBox="0 0 320 272" aria-hidden="true" focusable="false">
+            <rect x="0" y="236" width="320" height="36" class="f-hatch"/><path d="M0 236 H320" class="st"/>
+            <rect x="40" y="30" width="210" height="206" class="st2"/><path d="M40 98 H250 M40 166 H250" class="st"/>
+            <text x="48" y="48" class="hand-s">Piso 3</text><text x="48" y="116" class="hand-s">Piso 2</text><text x="48" y="184" class="hand-s">Piso 1</text>
+            <rect x="150" y="54" width="22" height="44" class="f-paper st"/><rect x="150" y="122" width="22" height="44" class="f-paper st"/><rect x="150" y="192" width="22" height="44" class="f-paper st"/>
+            <path class="w-green" d="M190 83 H172 M190 151 H172 M180 218 H172"/>
+            <rect data-part="tgb" class="gpart f-copper" x="190" y="80" width="34" height="6"/>
+            <rect data-part="tgb" class="gpart f-copper" x="190" y="148" width="34" height="6"/>
+            <rect data-part="tmgb" class="gpart f-copper" x="180" y="214" width="44" height="8"/>
+            <path data-part="tbb" class="gpart w-green" d="M224 218 H234 V151 H224 M234 151 V83 H224"/>
+            <rect x="66" y="196" width="26" height="32" class="f-paper st"/><text x="79" y="215" text-anchor="middle" class="tiny" style="font-size:7px">tablero</text>
+            <path data-part="bct" class="gpart w-green" d="M180 220 H92"/>
+            <path data-part="electrodo" class="gpart w-green" d="M79 228 V256 M69 256 H89 M73 261 H85 M77 266 H81"/>
+            <text x="230" y="76" text-anchor="end" class="tiny">TGB</text><text x="230" y="144" text-anchor="end" class="tiny">TGB</text>
+            <text x="202" y="210" text-anchor="middle" class="tiny">TMGB</text><text x="240" y="120" class="tiny">TBB</text><text x="136" y="232" text-anchor="middle" class="tiny">BCT</text>
+          </svg>
+          <div id="gDef" aria-live="polite"><p>Elige una parte para ver qué es.</p></div>
+        </div>
+        <!-- CABLEADO -->
+        <div class="try" data-topic="cableado" hidden>
+          <h3>Arma un canal de cableado</h3>
+          <div class="row"><label for="perm">Enlace permanente: <output id="permOut" for="perm">85</output> m</label><input type="range" id="perm" min="0" max="110" value="85"></div>
+          <div class="row"><label for="patchr">Cordones (suma): <output id="patchOut" for="patchr">8</output> m</label><input type="range" id="patchr" min="0" max="20" value="8"></div>
+          <div class="track-wrap" aria-hidden="true"><span class="limit-label">100 m</span><div class="track"><div class="seg-perm" id="segPerm"></div><div class="seg-patch" id="segPatch"></div><span class="limit"></span></div></div>
+          <div class="status" id="canalStatus" aria-live="polite"></div>
+          <hr class="div">
+          <h3>¿Qué tan lejos de la energía?</h3>
+          <p>Elige la potencia del circuito eléctrico y a qué distancia vas a pasar el cable de datos. ¿Cumple?</p>
+          <div class="row"><label for="kva">Potencia del circuito eléctrico: <output id="kvaOut" for="kva">1,5</output> kVA</label><input type="range" id="kva" min="0.5" max="10" step="0.5" value="1.5"></div>
+          <div class="row"><label for="dist">Distancia entre el cable de datos y el de fuerza: <output id="distOut" for="dist">50</output> mm</label><input type="range" id="dist" min="0" max="800" step="10" value="50"></div>
+          <div class="emi" aria-hidden="true">
+            <span class="lab" style="top:2px">Cable de fuerza</span><div class="ln pw"></div>
+            <div class="req" id="emiReq"><span>mínimo</span></div>
+            <div class="ln dt" id="emiData"></div><span class="lab" id="emiLab">Cable de datos</span>
+          </div>
+          <div class="status" id="emiStatus" aria-live="polite"></div>
+          <p style="font-size:.9rem; color:var(--ink-soft)">Valores de referencia de TIA-569-B para fuerza sin blindaje cerca de cableado de datos.</p>
+        </div>
+      </div>
+
+      <div role="tabpanel" id="p-media" aria-labelledby="tab-media" hidden>
+        <div class="media">
+          <div><div class="video" id="tVideo"></div><p class="vcap" id="tVideoCap"></p></div>
+          <figure class="foto" id="tFoto" style="margin:0"></figure>
+        </div>
+      </div>
+
+      <div class="nextrow">
+        <button class="btn" type="button" id="prevBtn">Tema anterior</button>
+        <button class="btn primary" type="button" id="nextBtn">Siguiente tema</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="full" id="reto" aria-labelledby="tReto">
+  <h2 id="tReto">Reto: ¿qué está mal en este cuarto?</h2>
+  <div class="mision">
+    <p>En este cuarto hay <strong>8 elementos marcados con un círculo</strong>: <strong>5 incumplen</strong> las normas y <strong>3 están bien</strong>.</p>
+    <p style="margin:0">Tu misión: encontrar los 5 errores. Tienes <strong>3 vidas</strong>: si marcas algo que está bien, pierdes una. Si te quedas sin vidas, intenta de nuevo.</p>
+  </div>
+  <div class="reto-grid">
+    <div class="scene">
+      <svg viewBox="0 0 400 300" aria-hidden="true" focusable="false">
+        <rect x="10" y="10" width="380" height="20" class="f-hatch st"/>
+        <rect x="10" y="262" width="380" height="18" class="f-hatch st"/>
+        <rect x="10" y="30" width="12" height="232" class="f-hatch st"/>
+        <rect x="378" y="30" width="12" height="80" class="f-hatch st"/>
+        <rect x="378" y="96" width="12" height="166" class="f-hatch st"/>
+        <rect x="378" y="80" width="12" height="16" class="f-hole"/>
+        <!-- puerta abierta con cuña -->
+        <rect x="40" y="140" width="60" height="122" class="f-hole" opacity=".25"/>
+        <path d="M40 140 L72 150 L72 254 L40 262 Z" class="f-paper st2"/>
+        <path d="M100 262 L118 262 L100 252 Z" class="f-copper"/>
+        <rect x="108" y="186" width="10" height="16" rx="2" class="f-paper st"/>
+        <circle cx="113" cy="191" r="1.8" class="f-green"/>
+        <!-- tubería con gotera -->
+        <path d="M22 50 H280" class="w-pipe"/>
+        <path d="M201 58 q4 6 0 9 q-4 -3 0 -9 z M207 74 q4 6 0 9 q-4 -3 0 -9 z M203 92 q4 6 0 9 q-4 -3 0 -9 z" fill="var(--cable)"/>
+        <text x="40" y="44" class="hand sm">tubería de agua</text>
+        <!-- detector y aire -->
+        <path d="M300 30 a11 8 0 0 0 22 0 z" class="f-paper st"/>
+        <rect x="288" y="104" width="78" height="26" rx="3" class="f-paper st2"/>
+        <path d="M296 122 h62 M296 126 h62" class="st"/>
+        <!-- canalización mixta -->
+        <path d="M22 70 H160" class="w-power"/>
+        <path d="M22 75 H160 Q172 76 178 110 M22 77 H160 Q176 80 186 110" class="w-cable"/>
+        <path d="M50 66 v14 M90 66 v14 M130 66 v14" class="st"/>
+        <!-- bandeja atravesando el muro sin sellar -->
+        <path d="M200 84 H390 M200 92 H390" class="st"/>
+        <path d="M214 84v8 M228 84v8 M242 84v8 M256 84v8 M270 84v8 M284 84v8 M298 84v8 M312 84v8 M326 84v8 M340 84v8 M354 84v8 M368 84v8" class="st" opacity=".6"/>
+        <path d="M208 92 V110 M220 92 V110" class="w-cable"/>
+        <!-- rack sin tierra -->
+        <rect x="170" y="110" width="70" height="152" rx="2" class="f-paper st2"/>
+        <rect x="178" y="120" width="54" height="12" class="st"/>
+        <rect x="178" y="138" width="54" height="12" class="st"/>
+        <rect x="178" y="190" width="54" height="22" class="st"/>
+        <rect x="178" y="220" width="54" height="22" class="st"/>
+        <rect x="118" y="236" width="40" height="7" class="f-copper"/>
+        <path d="M158 240 q8 4 4 16" class="w-green"/>
+        <text x="138" y="256" text-anchor="middle" class="hand sm">TGB</text>
+      </svg>
+      <button class="spot" type="button" data-spot="cuna" style="left:27.5%;top:85%" aria-label="Revisar: parte baja de la puerta">?</button>
+      <button class="spot" type="button" data-spot="tuberia" style="left:51.5%;top:25%" aria-label="Revisar: encima del rack">?</button>
+      <button class="spot" type="button" data-spot="tierra" style="left:41%;top:82%" aria-label="Revisar: base del rack">?</button>
+      <button class="spot" type="button" data-spot="muro" style="left:95%;top:29%" aria-label="Revisar: muro derecho">?</button>
+      <button class="spot" type="button" data-spot="mixto" style="left:20%;top:24.5%" aria-label="Revisar: canalización del techo">?</button>
+      <button class="spot" type="button" data-spot="aire" style="left:82%;top:39%" aria-label="Revisar: equipo de la pared">?</button>
+      <button class="spot" type="button" data-spot="detector" style="left:77.5%;top:12%" aria-label="Revisar: dispositivo del techo">?</button>
+      <button class="spot" type="button" data-spot="lector" style="left:28.3%;top:64%" aria-label="Revisar: junto a la puerta">?</button>
+    </div>
+    <div>
+      <p class="counter" id="counter">Errores encontrados: 0 de 5</p>
+      <p class="lives" id="lives" aria-label="Vidas: 3">♥♥♥</p>
+      <div class="panel feedback" id="spotFb" aria-live="polite"><p>Selecciona un círculo del dibujo.</p></div>
+      <button class="btn" type="button" id="resetSpots">Reiniciar reto</button>
+    </div>
+  </div>
+</section>
+
+<section class="full" id="quiz" aria-labelledby="tQuiz">
+  <h2 id="tQuiz">Quiz rápido</h2>
+  <div class="quiz panel" id="quizBox" aria-live="polite"></div>
+</section>
+
+<section class="full" aria-labelledby="tRefs">
+  <h2 id="tRefs">Referencias</h2>
+  <ul class="refs">
+    <li>Telecommunications Industry Association. ([año]). <em>Telecommunications pathways and spaces</em> (ANSI/TIA-569-[edición]).</li>
+    <li>Telecommunications Industry Association. ([año]). <em>Generic telecommunications bonding and grounding (earthing) for customer premises</em> (ANSI/TIA-607-[edición]).</li>
+    <li>Telecommunications Industry Association. ([año]). <em>Balanced twisted-pair telecommunications cabling and components standard</em> (ANSI/TIA-568.2-[edición]).</li>
+    <li>Telecommunications Industry Association. ([año]). <em>Administration standard for telecommunications infrastructure</em> (ANSI/TIA-606-[edición]).</li>
+    <li>Ministerio de Minas y Energía. ([año]). <em>Reglamento Técnico de Instalaciones Eléctricas (RETIE)</em>.</li>
+    <li>ICONTEC. ([año]). <em>Código Eléctrico Colombiano</em> (NTC 2050).</li>
+    <li>National Fire Protection Association. ([año]). <em>Standard for the fire protection of information technology equipment</em> (NFPA 75).</li>
+  </ul>
+</section>
+</main>
+
+<footer>
+  <p>Proyecto de <strong>Anubis Jeshua Valega Vanegas</strong> para la materia <strong>Cableado Estructurado</strong>, grupo 54450, 2026.<br>Docente: Danilo Andrés Rincón Plazas.</p>
+  <p>Los dibujos son esquemas didácticos, no planos de construcción.</p>
+</footer>
+
+<script>
+/* =========================================================
+   VIDEOS Y FOTOS: edita solo esta parte.
+   video: el ID de YouTube (lo que va después de "watch?v=").
+   foto:  ruta de tu foto dentro del repositorio.
+   ========================================================= */
+const MEDIA = {
+  acceso:   {video:'kd33UVZhnAA', titulo:'Google Data Center Security: 6 Layers Deep', canal:'Google Cloud Tech (en inglés, activa los subtítulos)', foto:'fotos/acceso.jpg', pie:'Foto real: acceso a un cuarto de telecomunicaciones'},
+  clima:    {video:'TkkxqVDDLn0', titulo:'Cómo funcionan las unidades de precisión de aire acondicionado', canal:'YouTube', foto:'fotos/clima.jpg', pie:'Foto real: climatización del cuarto'},
+  fuego:    {video:'4oDCOx3-_iY', titulo:'Sistema de extinción Novec 1230', canal:'IBEREXT Protección Contra Incendios', foto:'fotos/fuego.jpg', pie:'Foto real: detección o supresión de incendios'},
+  tierra:   {video:'HnNhb-1EbbQ', titulo:'Sistema de puesta a tierra: cómo funciona, explicado fácilmente', canal:'YouTube', foto:'fotos/tierra.jpg', pie:'Foto real: barra de tierra (TGB)'},
+  cableado: {video:'33_bGCPgCuQ', titulo:'Cableado estructurado en un rack: router, switch y panel de parcheo', canal:'YouTube', foto:'fotos/cableado.jpg', pie:'Foto real: rack y cableado ordenado'}
+};
+</script>
+<script>
+(function(){
+  const ITEMS = {
+    rack:{t:'base', n:'Rack', d:'Estructura donde se montan los equipos: patch panel, switches y servidores.', b:[368,262]},
+    puerta:{t:'acceso', n:'Puerta', d:'Abre hacia afuera, mide mínimo 0,91 m × 2,0 m, no tiene umbral y se cierra sola.', b:[95,138]},
+    lector:{t:'acceso', n:'Lector de tarjeta y huella', d:'Doble factor: algo que tienes (tarjeta) y algo que eres (huella). Cada ingreso queda registrado.', b:[157,186]},
+    camara:{t:'acceso', n:'Cámara de seguridad (CCTV)', d:'Graba quién entra y sale. La grabación se guarda fuera del cuarto.', b:[82,40]},
+    muro:{t:'acceso', n:'Muro del piso a la losa', d:'La flecha marca que el muro sube hasta la losa de concreto. Si llega solo al cielo raso, se puede entrar por encima.', b:[32,178]},
+    candado:{t:'acceso', n:'Rack con llave', d:'Segunda barrera: aunque alguien entre al cuarto, no puede tocar los equipos.', b:[366,216]},
+    aire:{t:'clima', n:'Aire acondicionado dedicado', d:'Funciona 24/7 y es solo para este cuarto, independiente del aire del edificio.', b:[416,150]},
+    sensorth:{t:'clima', n:'Sensor de temperatura y humedad', d:'Mide el ambiente y envía una alerta si sale del rango recomendado.', b:[236,132]},
+    fuga:{t:'clima', n:'Sensor de fuga de agua', d:'Un cable en el piso que detecta agua y avisa antes de que llegue a los equipos.', b:[530,284]},
+    detector:{t:'fuego', n:'Detector de humo', d:'Detecta el incendio en su etapa inicial y activa la alarma.', b:[212,34]},
+    boquilla:{t:'fuego', n:'Boquilla de descarga', d:'Por aquí sale el agente limpio que llena el cuarto y apaga el fuego.', b:[424,40]},
+    cilindro:{t:'fuego', n:'Cilindro de agente limpio', d:'Almacena el agente (por ejemplo FM-200). No conduce electricidad ni deja residuos.', b:[538,188]},
+    sellado:{t:'fuego', n:'Sellado cortafuego', d:'Material intumescente que cierra el hueco por donde los cables atraviesan el muro.', b:[568,128]},
+    tgb:{t:'tierra', n:'TGB (barra de tierra)', d:'Barra de cobre del cuarto. Aquí se conecta todo lo metálico.', b:[166,286]},
+    union:{t:'tierra', n:'Unión del rack a tierra', d:'Cable verde que conecta el rack con la TGB.', b:[246,256]},
+    unionb:{t:'tierra', n:'Unión de la bandeja a tierra', d:'La bandeja metálica también se conecta a la TGB.', b:[164,190]},
+    tbb:{t:'tierra', n:'TBB (dorsal de tierra)', d:'Conductor que baja hacia la barra principal del edificio (TMGB).', b:[234,314]},
+    bandeja:{t:'cableado', n:'Bandeja de cables', d:'Escalerilla que lleva los cables de datos hasta el rack y a través del muro.', b:[480,80]},
+    patch:{t:'cableado', n:'Patch panel', d:'Donde termina el cableado horizontal. Desde aquí se conecta a los switches.', b:[368,138]},
+    etiquetas:{t:'cableado', n:'Etiquetas (TIA-606)', d:'Cada cable identificado en ambos extremos para encontrarlo rápido.', b:[252,114]},
+    fuerza:{t:'cableado', n:'Tubería eléctrica separada', d:'La energía va por su propia canalización. La línea roja marca la separación con los datos.', b:[140,50]},
+    anclaje:{t:'cableado', n:'Anclaje al piso', d:'Pernos que fijan el rack al piso. Importante en zonas sísmicas como Colombia.', b:[376,302]}
+  };
+  const TOPICS = [
+    {id:'acceso', teoria:'<p>La primera capa de seguridad es física: controlar quién llega hasta los equipos. Según TIA-569, el cuarto debe ser <mark>exclusivo para telecomunicaciones</mark>, con una puerta que abra hacia afuera (o corrediza), de al menos 0,91 m de ancho y 2,0 m de alto, sin umbral y con cerradura.</p><p>Los muros deben subir del piso hasta la losa de concreto: si terminan en el cielo raso, alguien puede pasar por encima. El control se hace en capas, para que si una falla, la siguiente responda.</p><dl class="terms"><dt>Doble factor de autenticación</dt><dd>Pedir dos pruebas distintas: algo que tienes (tarjeta) y algo que eres (huella).</dd><dt>Bitácora de acceso</dt><dd>Registro de quién entró, cuándo y por cuánto tiempo.</dd><dt>CCTV</dt><dd>Circuito cerrado de televisión. La grabación se guarda fuera del cuarto, para que nadie la borre desde adentro.</dd></dl>', name:'Acceso', normas:['TIA-569'], idea:'Que solo entre quien debe entrar, y que quede registro.',
+     cards:[['¿Hacia dónde abre la puerta?','Hacia afuera (o corrediza), de al menos 0,91 m × 2,0 m y sin umbral.'],
+            ['¿Por qué el muro llega hasta la losa?','Si termina en el cielo raso, alguien puede pasar por encima quitando baldosas.'],
+            ['¿El cuarto puede ser bodega?','No. Es exclusivo para telecomunicaciones: nada de cajas, escobas ni muebles.']]},
+    {id:'clima', teoria:'<p>Switches y servidores convierten casi toda la energía que consumen en calor, y trabajan 24 horas. Si ese calor no se saca, los componentes se degradan más rápido y los equipos se apagan solos para protegerse.</p><p>Por eso el cuarto necesita climatización <mark>dedicada</mark>, que no dependa del aire del edificio (que muchas veces se apaga de noche o los fines de semana). La humedad también importa, y el agua es el enemigo: ninguna tubería ajena debe pasar por el cuarto.</p><dl class="terms"><dt>Temperatura</dt><dd>18 a 24 °C según TIA-569. La guía de ASHRAE acepta hasta 27 °C.</dd><dt>Humedad relativa</dt><dd>30 a 55 %. Muy seca genera electricidad estática; muy húmeda, condensación y corrosión.</dd><dt>Aire acondicionado de precisión</dt><dd>Equipo que controla temperatura y humedad a la vez, diseñado para trabajar sin parar en cuartos técnicos.</dd></dl>', name:'Clima', normas:['TIA-569','ASHRAE'], idea:'Ni mucho calor, ni mucha humedad, ni una gota de agua.',
+     cards:[['¿Qué temperatura?','18 a 24 °C según TIA-569. ASHRAE acepta hasta 27 °C.'],
+            ['¿Y la humedad?','30 a 55 %. Muy seca: estática. Muy húmeda: condensación y corrosión.'],
+            ['¿Puede pasar una tubería de agua?','No, salvo las del propio cuarto. Una gotera puede causar un cortocircuito.']]},
+    {id:'fuego', teoria:'<p>Un incendio en un cuarto de telecomunicaciones suele empezar por algo eléctrico: un cable recalentado o una fuente dañada. La protección tiene tres partes: <mark>detectar temprano, apagar sin dañar y contener</mark>.</p><p>Se detecta con sensores de humo; se apaga con un agente limpio, un gas que no conduce electricidad ni deja residuos; y se contiene sellando cada hueco por donde un cable atraviesa un muro, para que el fuego y el humo no pasen a otro espacio.</p><dl class="terms"><dt>Agente limpio</dt><dd>Gas extintor como el FM-200 o el FK-5-1-12 (conocido como Novec 1230). Apaga el fuego sin mojar ni ensuciar los equipos.</dd><dt>VESDA</dt><dd>Sistema que aspira aire continuamente y detecta humo antes de que sea visible.</dd><dt>Sellado intumescente</dt><dd>Material que se expande con el calor y cierra el hueco de los cables.</dd><dt>Rociador de preacción</dt><dd>Si el código exige rociadores, este tipo solo llena la tubería con agua cuando hay una alarma real.</dd></dl>', name:'Fuego', normas:['NFPA 75','NFPA 2001'], idea:'Detectar el fuego temprano y apagarlo sin dañar los equipos.',
+     cards:[['¿Por qué no usar agua?','Conduce electricidad y daña los equipos. El agente limpio no deja residuos.'],
+            ['¿Qué es VESDA?','Un sistema que aspira aire todo el tiempo y detecta humo antes de que se vea.'],
+            ['¿Qué es intumescente?','Un material que se expande con el calor y cierra el hueco de los cables.']]},
+    {id:'tierra', teoria:'<p>La puesta a tierra es la conexión física de la instalación con el suelo. Fija una <mark>referencia de potencial cero (0 V)</mark> común para todo el sistema y le da un camino seguro a las corrientes de falla y a las sobretensiones, como las de un rayo, para que no pasen por los equipos ni por las personas. También reduce el ruido eléctrico en las señales de datos.</p><p>La norma ANSI/TIA-607 organiza este sistema como un árbol que recorre el edificio, desde el electrodo enterrado hasta cada rack:</p><dl class="terms"><dt>TMGB (Telecommunications Main Grounding Busbar)</dt><dd>Barra principal de tierra de telecomunicaciones. Está normalmente en la sala de equipos y es el punto central de todo el sistema.</dd><dt>TGB (Telecommunications Grounding Busbar)</dt><dd>Barra de tierra secundaria, una en cada cuarto de telecomunicaciones de piso.</dd><dt>TBB (Telecommunications Bonding Backbone)</dt><dd>Conductor dorsal que interconecta la TMGB con las TGB de los distintos pisos.</dd><dt>BCT (Bonding Conductor for Telecommunications)</dt><dd>Conductor de cobre que une la TMGB con la tierra del sistema eléctrico del edificio.</dd><dt>Equipotencialidad</dt><dd>Todo elemento metálico que no lleva corriente (racks, bandejas, gabinetes) se conecta a la barra de tierra, para que no haya diferencias de voltaje peligrosas entre ellos.</dd></dl><p style="margin-top:.6rem">En Colombia también aplican el <strong>RETIE</strong> y la <strong>NTC 2050</strong>.</p>', name:'Tierra', normas:['TIA-607','RETIE','NTC 2050'], idea:'Todo lo metálico, conectado a una misma tierra.',
+     cards:[['¿Para qué sirve?','Las fallas y descargas se van a tierra, no por los equipos ni por las personas.'],
+            ['¿TMGB o TGB?','TMGB: barra principal del edificio. TGB: barra de cada cuarto de piso.'],
+            ['¿Qué se conecta?','Todo lo metálico que no lleva corriente: racks, bandejas, gabinetes.']]},
+    {id:'cableado', teoria:'<p>El cableado también es seguridad física: un cable mal instalado falla, recibe interferencia o no se encuentra cuando hay una emergencia. TIA-568 fija la regla de los <mark>100 metros</mark> para el canal horizontal.</p><p>Además, los cables de datos van separados de los de energía, cada cable se etiqueta en ambos extremos y los racks se anclan al piso. En Colombia, que es zona sísmica, el anclaje se cruza con la NSR-10.</p><dl class="terms"><dt>Enlace permanente</dt><dd>El cable fijo que va por paredes y bandejas, del patch panel a la toma. Máximo 90 m.</dd><dt>Canal</dt><dd>El enlace permanente más los cordones de conexión de ambos lados. Máximo 100 m.</dd><dt>EMI (interferencia electromagnética)</dt><dd>Ruido que el campo magnético de los cables de energía induce en los de datos.</dd><dt>TIA-606</dt><dd>Norma de rotulado: identifica cada cable, puerto y panel para encontrarlos rápido.</dd></dl>', name:'Cableado', normas:['TIA-568','TIA-606','NSR-10'], idea:'Cables ordenados, separados de la energía y bien anclados.',
+     cards:[['¿La regla de los 100 m?','90 m de enlace permanente más 10 m de cordones, como máximo.'],
+            ['¿Por qué separar de la energía?','El campo magnético de la corriente induce ruido en los datos (EMI).'],
+            ['¿Para qué etiquetar?','En una falla, encontrar el cable correcto toma minutos y no horas.']]}
+  ];
+
+  const room = document.getElementById('room');
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  const info = document.getElementById('info');
+  const badgesG = document.getElementById('badges');
+  const cmps = [...room.querySelectorAll('.cmp')];
+  const unlocked = new Set();
+  let cur = 0;
+
+  cmps.forEach(g => {
+    const it = ITEMS[g.dataset.id];
+    g.dataset.topic = it.t;
+    g.setAttribute('aria-label', it.n);
+    if (it.t !== 'base') g.classList.add('locked');
+    const pick = () => select(g.dataset.id);
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+
+  function select(id){
+    const it = ITEMS[id];
+    cmps.forEach(g => g.classList.toggle('sel', g.dataset.id === id));
+    info.innerHTML = '<strong>' + it.n + '</strong><p>' + it.d + '</p>';
+  }
+
+  // Stepper
+  const stepper = document.getElementById('stepper');
+  TOPICS.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<button type="button" data-i="' + i + '"><span class="num">' + (i+1) + '</span>' + t.name + '</button>';
+    stepper.appendChild(li);
+  });
+  stepper.addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(+b.dataset.i, true); });
+
+  const flipsBox = document.getElementById('tFlips');
+  const chipsBox = document.getElementById('tChips');
+
+  function go(i, focusTitle){
+    cur = i;
+    const t = TOPICS[i];
+    // Desbloquear capa
+    if (!unlocked.has(t.id)) {
+      unlocked.add(t.id);
+      cmps.filter(g => g.dataset.topic === t.id).forEach(g => {
+        g.classList.remove('locked'); g.classList.add('just');
+        setTimeout(() => g.classList.remove('just'), 800);
+      });
+    }
+    cmps.forEach(g => g.classList.toggle('act', g.dataset.topic === t.id));
+    // Stepper
+    stepper.querySelectorAll('button').forEach((b, j) => {
+      const dn = unlocked.has(TOPICS[j].id);
+      b.classList.toggle('done', dn);
+      b.querySelector('.num').textContent = dn ? '✓' : (j + 1);
+      b.setAttribute('aria-label', TOPICS[j].name + (dn ? ' (visto)' : ''));
+      if (j === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    document.getElementById('progress').textContent = unlocked.size === 5
+      ? '¡Cuarto armado! 5 de 5 capas. Ahora pasa al reto.'
+      : 'Cuarto armado: ' + unlocked.size + ' de 5 capas';
+    // Insignias numeradas
+    const ids = Object.keys(ITEMS).filter(k => ITEMS[k].t === t.id);
+    badgesG.innerHTML = ids.map((k, n) => {
+      const [x, y] = ITEMS[k].b;
+      return '<g class="badge" aria-hidden="true"><circle cx="' + x + '" cy="' + y + '" r="10"/><text x="' + x + '" y="' + y + '">' + (n+1) + '</text></g>';
+    }).join('');
+    // Panel
+    document.getElementById('tTitle').textContent = 'Capa ' + (i+1) + ': ' + t.name;
+    document.getElementById('tNormas').innerHTML = t.normas.map(n => '<span class="norma">' + n + '</span>').join('');
+    document.getElementById('tIdea').textContent = t.idea;
+    chipsBox.innerHTML = ids.map((k, n) => '<li><button type="button" data-id="' + k + '"><span class="n">' + (n+1) + '</span>' + ITEMS[k].n + '</button></li>').join('');
+    flipsBox.innerHTML = t.cards.map(c => '<button class="flip" type="button" aria-pressed="false"><span class="in"><span class="fa"><b>' + c[0] + '</b><small>voltear</small></span><span class="fb">' + c[1] + '</span></span></button>').join('');
+    document.querySelectorAll('.try').forEach(d => d.hidden = d.dataset.topic !== t.id);
+    renderMedia(t.id);
+    const m = MEDIA[t.id];
+    document.getElementById('tTeoria').innerHTML = t.teoria;
+    selTab(tabs[0], false);
+    select(ids[0]);
+    document.getElementById('prevBtn').disabled = i === 0;
+    const nb = document.getElementById('nextBtn');
+    nb.textContent = i === TOPICS.length - 1 ? 'Ir al reto' : 'Siguiente: ' + TOPICS[i+1].name;
+    if (focusTitle) document.getElementById('tTitle').focus({preventScroll:true});
+  }
+
+  chipsBox.addEventListener('click', e => { const b = e.target.closest('button'); if (b) select(b.dataset.id); });
+  flipsBox.addEventListener('click', e => {
+    const f = e.target.closest('.flip'); if (!f) return;
+    f.setAttribute('aria-pressed', String(f.getAttribute('aria-pressed') !== 'true'));
+  });
+  const toSteps = () => document.getElementById('progress').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'start'});
+  document.getElementById('prevBtn').addEventListener('click', () => { if (cur > 0) { go(cur - 1, true); toSteps(); } });
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    if (cur < TOPICS.length - 1) { go(cur + 1, true); toSteps(); }
+    else document.getElementById('reto').scrollIntoView();
+  });
+
+  // Pestañas
+  function selTab(tab, focus){
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    if (focus !== false) tab.focus();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => selTab(t));
+    t.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') selTab(tabs[(i+1) % tabs.length]);
+      if (e.key === 'ArrowLeft') selTab(tabs[(i-1+tabs.length) % tabs.length]);
+    });
+  });
+
+  // Video y foto
+  function renderMedia(id){
+    const m = MEDIA[id], v = document.getElementById('tVideo'), f = document.getElementById('tFoto');
+    if (m.video) {
+      v.innerHTML = '<button type="button" aria-label="Reproducir video: ' + m.titulo + '"><img src="https://i.ytimg.com/vi/' + m.video + '/hqdefault.jpg" alt=""><span class="play"></span></button>';
+      v.querySelector('button').addEventListener('click', () => {
+        if (location.protocol === 'file:') {
+          v.innerHTML = '<div class="placeholder"><p>El video se reproduce aquí cuando la página está publicada en GitHub Pages.</p><a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=' + m.video + '">Verlo en YouTube</a></div>';
+          return;
+        }
+        v.innerHTML = '<iframe src="https://www.youtube.com/embed/' + m.video + '?autoplay=1&rel=0" title="' + m.titulo + '" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+      });
+      document.getElementById('tVideoCap').innerHTML = '<strong>' + m.titulo + '</strong><br>' + m.canal + '. <a href="https://www.youtube.com/watch?v=' + m.video + '" target="_blank" rel="noopener">Abrir en YouTube</a>';
+    } else {
+      v.innerHTML = '<div class="placeholder"><p>Aquí va el video de este tema</p><a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=' + encodeURIComponent(m.buscar) + '">Buscar videos en YouTube</a></div>';
+    }
+    f.hidden = false;
+    f.innerHTML = '<img src="' + m.foto + '" alt="' + m.pie + '"><figcaption>' + m.pie + '</figcaption>';
+    f.querySelector('img').addEventListener('error', () => {
+      f.hidden = true;
+    });
+  }
+
+  // Acceso
+  const people = {
+    ana:{c:true, h:true, r:true, v:'Acceso concedido. Su ingreso queda registrado con fecha y hora.'},
+    visita:{c:false, h:false, r:true, v:'Acceso denegado. Un visitante entra solo acompañado y registrado por el personal autorizado.'},
+    prestada:{c:true, h:false, r:true, v:'Acceso denegado. Por esto existe el doble factor: una tarjeta se presta o se pierde, una huella no.'}
+  };
+  document.querySelectorAll('[data-person]').forEach(b => b.addEventListener('click', () => {
+    const p = people[b.dataset.person];
+    document.querySelectorAll('[data-person]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    const li = (ok, txt) => '<li class="' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✓ ' : '✕ ') + txt + '</li>';
+    const okAll = p.c && p.h;
+    document.getElementById('accessOut').innerHTML = '<ul class="checks">' + li(p.c,'Tarjeta válida') + li(p.h,'Huella coincide') + li(p.r,'Intento registrado en la bitácora') + '</ul><div class="status ' + (okAll?'ok':'bad') + '"><span class="ico" aria-hidden="true">' + (okAll?'✓':'✕') + '</span><span>' + p.v + '</span></div>';
+    select(okAll ? 'puerta' : 'lector');
+  }));
+
+  // Clima
+  const t = document.getElementById('temp'), h = document.getElementById('hum');
+  const setS = (el, lv, tx) => { el.className = 'status ' + lv; el.innerHTML = '<span class="ico" aria-hidden="true">' + ({ok:'✓',warn:'!',bad:'✕'})[lv] + '</span><span>' + tx + '</span>'; };
+  function clima(){
+    const tv = +t.value, hv = +h.value;
+    document.getElementById('tempOut').textContent = tv; document.getElementById('humOut').textContent = hv;
+    const tS = document.getElementById('tStatus'), hS = document.getElementById('hStatus');
+    if (tv < 18) setS(tS,'warn','Más frío de lo necesario: gasto de energía y riesgo de condensación.');
+    else if (tv <= 24) setS(tS,'ok','Temperatura dentro del rango de TIA-569.');
+    else if (tv <= 27) setS(tS,'warn','Aceptable para ASHRAE, pero por encima de TIA-569.');
+    else setS(tS,'bad','Sobrecalentamiento: los equipos se degradan y pueden apagarse.');
+    if (hv < 30) setS(hS,'bad','Aire muy seco: descargas electrostáticas.');
+    else if (hv <= 55) setS(hS,'ok','Humedad dentro del rango recomendado.');
+    else if (hv <= 65) setS(hS,'warn','Humedad alta: empieza el riesgo de condensación.');
+    else setS(hS,'bad','Demasiada humedad: condensación y corrosión.');
+    room.querySelector('[data-id=sensorth] text').textContent = tv + ' °C';
+    room.querySelectorAll('[data-id=sensorth] text')[1].textContent = hv + ' %';
+  }
+  t.addEventListener('input', clima); h.addEventListener('input', clima); clima();
+
+  // Fuego: secuencia con alarma y sonido
+  const seq = [...document.querySelectorAll('#fireSeq li')], live = document.getElementById('fireLive');
+  const runBtn = document.getElementById('fireRun'), soundBtn = document.getElementById('soundBtn');
+  const topicEl = document.getElementById('topic'), cd = document.getElementById('countdown');
+  let soundOn = true, actx = null;
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.textContent = soundOn ? 'Sonido activado' : 'Sonido apagado';
+  });
+  function ctx(){ if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); return actx; }
+  function beep(freq, dur, type, vol){
+    if (!soundOn) return;
+    try {
+      const a = ctx(), o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime;
+      o.type = type || 'square'; o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || 0.06, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + dur);
+    } catch (err) {}
+  }
+  function whoosh(){
+    if (!soundOn) return;
+    try {
+      const a = ctx(), len = a.sampleRate * 1.6, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+      f.type = 'lowpass'; f.frequency.value = 1200; g.gain.value = 0.12;
+      src.buffer = buf; src.connect(f); f.connect(g); g.connect(a.destination); src.start();
+    } catch (err) {}
+  }
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const mark = k => { seq.forEach((li, j) => li.className = j < k ? 'past' : (j === k ? 'on' : '')); live.textContent = seq[k].textContent; };
+  runBtn.addEventListener('click', async () => {
+    runBtn.disabled = true;
+    room.classList.remove('discharge', 'alarm', 'fire');
+    if (matchMedia('(max-width: 900px)').matches) room.scrollIntoView({block:'start'});
+    mark(0); room.classList.add('fire'); select('detector'); beep(660, .12);
+    await wait(1800);
+    mark(1); room.classList.add('alarm'); topicEl.classList.add('alarm');
+    for (let r = 0; r < 4; r++) { beep(880, .2); await wait(280); beep(620, .2); await wait(280); }
+    mark(2);
+    for (let n = 3; n >= 1; n--) {
+      cd.textContent = n; cd.style.opacity = 1; beep(1000, .15);
+      live.textContent = 'Cuenta regresiva: ' + n;
+      await wait(1000);
+    }
+    cd.style.opacity = 0;
+    mark(3); room.classList.add('discharge'); select('boquilla'); whoosh();
+    await wait(1900);
+    mark(4); room.classList.remove('fire', 'alarm'); topicEl.classList.remove('alarm'); select('cilindro');
+    beep(523, .15, 'sine', .08); await wait(170); beep(784, .3, 'sine', .08);
+    await wait(2200);
+    room.classList.remove('discharge');
+    runBtn.disabled = false; runBtn.textContent = 'Repetir simulación';
+  });
+  const fire = document.getElementById('fire'), fireText = document.getElementById('fireText');
+  const fMsg = {false:'Sin sellar: el humo y el fuego pasan al otro cuarto por el hueco del cable.', true:'Con sellado intumescente: el material se expande con el calor y cierra el hueco.'};
+  const setSeal = v => { fire.dataset.sealed = v; fire.querySelectorAll('[data-seal]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.seal === v))); fireText.textContent = fMsg[v]; };
+  fire.querySelectorAll('[data-seal]').forEach(b => b.addEventListener('click', () => setSeal(b.dataset.seal)));
+  setSeal('false');
+
+  // Tierra
+  const g = document.getElementById('ground'), gDef = document.getElementById('gDef');
+  const gInfo = {
+    tmgb:['TMGB: barra principal','El punto central del sistema, en la sala de equipos.'],
+    tgb:['TGB: barra de cada cuarto','Una por cuarto de telecomunicaciones de piso. Ahí se conectan racks y bandejas.'],
+    tbb:['TBB: dorsal de tierra','El conductor que recorre el edificio uniendo la TMGB con cada TGB.'],
+    bct:['BCT: unión con la tierra eléctrica','Une la TMGB con la tierra del sistema eléctrico del edificio.'],
+    electrodo:['Electrodo de puesta a tierra','La conexión física con el suelo, por ejemplo varillas enterradas.']
+  };
+  const gSel = p => {
+    g.querySelectorAll('button[data-part]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.part === p)));
+    g.querySelectorAll('.gpart').forEach(x => x.classList.toggle('hl', x.dataset.part === p));
+    gDef.innerHTML = '<p><strong>' + gInfo[p][0] + '.</strong> ' + gInfo[p][1] + '</p>';
+  };
+  g.querySelectorAll('button[data-part]').forEach(b => b.addEventListener('click', () => gSel(b.dataset.part)));
+  g.querySelectorAll('.gpart').forEach(x => x.addEventListener('click', () => gSel(x.dataset.part)));
+
+  // Cableado
+  const perm = document.getElementById('perm'), pr = document.getElementById('patchr');
+  function canal(){
+    const p = +perm.value, c = +pr.value, tot = p + c;
+    document.getElementById('permOut').textContent = p; document.getElementById('patchOut').textContent = c;
+    document.getElementById('segPerm').style.width = (p/130*100) + '%';
+    document.getElementById('segPatch').style.width = (c/130*100) + '%';
+    const st = document.getElementById('canalStatus');
+    if (p > 90) setS(st,'bad','Canal de ' + tot + ' m: no cumple. El enlace permanente pasa de 90 m.');
+    else if (c > 10) setS(st,'bad','Canal de ' + tot + ' m: no cumple. Los cordones suman más de 10 m.');
+    else setS(st,'ok','Canal de ' + tot + ' m: cumple.');
+  }
+  perm.addEventListener('input', canal); pr.addEventListener('input', canal); canal();
+  const kva = document.getElementById('kva'), dist = document.getElementById('dist');
+  function emi(){
+    const k = +kva.value, dm = +dist.value, mm = k < 2 ? 127 : (k <= 5 ? 305 : 610);
+    document.getElementById('kvaOut').textContent = String(k).replace('.', ',');
+    document.getElementById('distOut').textContent = dm;
+    const y = v => 26 + (v / 800) * 66;
+    document.getElementById('emiData').style.top = y(dm) + 'px';
+    document.getElementById('emiLab').style.top = (y(dm) + 10) + 'px';
+    document.getElementById('emiReq').style.top = (y(mm) + 4) + 'px';
+    const st = document.getElementById('emiStatus');
+    if (dm === 0) setS(st, 'bad', 'No cumple: el cable de datos va pegado al de fuerza. Para ' + String(k).replace('.', ',') + ' kVA necesitas al menos ' + mm + ' mm.');
+    else if (dm < mm) setS(st, 'bad', 'No cumple: ' + dm + ' mm es muy poco. Para ' + String(k).replace('.', ',') + ' kVA necesitas al menos ' + mm + ' mm.');
+    else setS(st, 'ok', 'Cumple: ' + dm + ' mm de separación. El mínimo para ' + String(k).replace('.', ',') + ' kVA es ' + mm + ' mm.');
+  }
+  kva.addEventListener('input', emi); dist.addEventListener('input', emi); emi();
+
+  go(0, false);
+})();
+</script>
+<script>
+/* ---------- Reto de errores con vidas ---------- */
+(function(){
+  const data = {
+    cuna:{bad:true, t:'Puerta trabada con una cuña', d:'Dejar la puerta abierta anula el control de acceso y deja escapar el aire frío. La puerta debe permanecer cerrada y con cierre automático.'},
+    tuberia:{bad:true, t:'Tubería de agua sobre el rack', d:'TIA-569 pide que no pasen tuberías ajenas por el cuarto. Una gotera sobre los equipos puede causar un cortocircuito.'},
+    tierra:{bad:true, t:'Rack sin conexión a tierra', d:'El cable de la TGB está suelto. Sin unión equipotencial (TIA-607) hay riesgo de descarga para las personas y más ruido en los datos.'},
+    muro:{bad:true, t:'Paso de cables sin sellar', d:'La bandeja atraviesa el muro y el hueco quedó abierto. Debe sellarse con material cortafuego intumescente.'},
+    mixto:{bad:true, t:'Datos amarrados a la tubería de fuerza', d:'Los cables de datos van pegados al tubo de energía. Debe respetarse la separación mínima para evitar interferencia (EMI).'},
+    aire:{bad:false, t:'Aire acondicionado dedicado', d:'El cuarto tiene su propia climatización. Esto cumple.'},
+    detector:{bad:false, t:'Detector de humo', d:'Hay detección de incendios en el techo. Esto cumple.'},
+    lector:{bad:false, t:'Lector de tarjeta', d:'Hay control de acceso. Esto cumple: el problema está en otra parte de la puerta.'}
+  };
+  const labels = {cuna:'parte baja de la puerta', tuberia:'encima del rack', tierra:'base del rack', muro:'muro derecho', mixto:'canalización del techo', aire:'equipo de la pared', detector:'dispositivo del techo', lector:'junto a la puerta'};
+  const spots = document.querySelectorAll('.spot');
+  const fb = document.getElementById('spotFb'), counter = document.getElementById('counter'), livesEl = document.getElementById('lives');
+  const found = new Set();
+  let lives = 3, over = false;
+  const drawLives = () => { livesEl.textContent = '♥'.repeat(lives) + '♡'.repeat(3 - lives); livesEl.setAttribute('aria-label', 'Vidas: ' + lives); };
+  function reset(){
+    found.clear(); lives = 3; over = false; drawLives();
+    spots.forEach(b => { b.className = 'spot'; b.textContent = '?'; b.disabled = false; b.setAttribute('aria-label', 'Revisar: ' + labels[b.dataset.spot]); });
+    counter.textContent = 'Errores encontrados: 0 de 5';
+    fb.innerHTML = '<p>Selecciona un círculo del dibujo que creas que es un error.</p>';
+  }
+  spots.forEach(btn => btn.addEventListener('click', () => {
+    if (over || btn.classList.contains('is-bad') || btn.classList.contains('is-ok')) return;
+    const k = btn.dataset.spot, d = data[k];
+    btn.classList.add(d.bad ? 'is-bad' : 'is-ok');
+    btn.textContent = d.bad ? '✕' : '✓';
+    btn.setAttribute('aria-label', (d.bad ? 'Error encontrado: ' : 'Cumple: ') + d.t);
+    if (d.bad) {
+      found.add(k);
+      counter.textContent = 'Errores encontrados: ' + found.size + ' de 5';
+      if (found.size === 5) {
+        over = true;
+        fb.innerHTML = '<h3 class="bad">✕ ' + d.t + '</h3><p>' + d.d + '</p><p class="ok"><strong>¡Encontraste los 5 errores! Este cuarto no pasaría una auditoría.</strong></p>';
+      } else {
+        fb.innerHTML = '<h3 class="bad">✕ ¡Bien visto! ' + d.t + '</h3><p>' + d.d + '</p><p>Te faltan ' + (5 - found.size) + '.</p>';
+      }
+    } else {
+      lives--; drawLives();
+      if (lives === 0) {
+        over = true;
+        spots.forEach(b => b.disabled = true);
+        fb.innerHTML = '<h3 class="ok">✓ ' + d.t + '</h3><p>' + d.d + '</p><p class="bad"><strong>Te quedaste sin vidas.</strong> Repasa las capas del recorrido e inténtalo de nuevo.</p><button class="btn primary" type="button" id="retry">Intentar de nuevo</button>';
+        document.getElementById('retry').addEventListener('click', () => { reset(); spots[0].focus(); });
+      } else {
+        fb.innerHTML = '<h3 class="ok">✓ Esto no es un error: ' + d.t + '</h3><p>' + d.d + '</p><p class="bad"><strong>Pierdes una vida.</strong> Te quedan ' + lives + '. Sigue buscando.</p>';
+      }
+    }
+  }));
+  document.getElementById('resetSpots').addEventListener('click', reset);
+  reset();
+})();
+
+/* ---------- Quiz uno por uno ---------- */
+(function(){
+  const qs = [
+    {q:'¿Hacia dónde debe abrir la puerta del cuarto?', o:['Hacia adentro','Hacia afuera (o ser corrediza)','Da igual'], a:1, e:'Hacia afuera no ocupa espacio dentro y facilita meter equipos grandes.'},
+    {q:'¿Por qué se prefieren los agentes limpios frente al agua?', o:['Son más baratos','No conducen electricidad ni dejan residuos','Se activan más rápido'], a:1, e:'El agua daña los equipos; el agente limpio no deja residuos.'},
+    {q:'¿Qué conductor une la TMGB con las TGB de cada piso?', o:['BCT','TBB','Un patch cord'], a:1, e:'La TBB es la dorsal que recorre el edificio.'},
+    {q:'Un canal tiene 95 m de enlace permanente y 4 m de cordones. ¿Cumple?', o:['Sí, suma 99 m','No, el enlace permanente pasa de 90 m'], a:1, e:'Aunque el total sea menor a 100 m, el enlace permanente no puede superar 90 m.'},
+    {q:'Si la humedad baja al 20 %, ¿cuál es el riesgo principal?', o:['Condensación','Descargas electrostáticas','Corrosión'], a:1, e:'El aire seco favorece la electricidad estática.'}
+  ];
+  const box = document.getElementById('quizBox');
+  let i = 0, score = 0;
+  function render(){
+    if (i >= qs.length) {
+      box.innerHTML = '<p class="big">' + score + ' de ' + qs.length + '</p><p>' + (score === qs.length ? '¡Perfecto! Ya puedes auditar un cuarto.' : score >= 3 ? 'Bien. Repasa las capas donde fallaste.' : 'Vuelve al recorrido y repasa las tarjetas.') + '</p><button class="btn primary" type="button" id="qAgain">Repetir quiz</button>';
+      document.getElementById('qAgain').addEventListener('click', () => { i = 0; score = 0; render(); });
+      return;
+    }
+    const q = qs[i];
+    box.innerHTML = '<p style="margin:0; font-weight:700">Pregunta ' + (i+1) + ' de ' + qs.length + '</p><div class="qbar" aria-hidden="true"><span style="width:' + (i/qs.length*100) + '%"></span></div><h3>' + q.q + '</h3><div class="qopts">' + q.o.map((o, j) => '<button class="btn" type="button" data-j="' + j + '">' + o + '</button>').join('') + '</div><p id="qfb"></p>';
+    box.querySelectorAll('[data-j]').forEach(b => b.addEventListener('click', () => {
+      const j = +b.dataset.j, ok = j === q.a;
+      if (ok) score++;
+      box.querySelectorAll('[data-j]').forEach(x => { x.disabled = true; if (+x.dataset.j === q.a) x.classList.add('right'); });
+      if (!ok) b.classList.add('wrong');
+      const fb = document.getElementById('qfb');
+      fb.className = ok ? 'ok' : 'bad';
+      fb.innerHTML = '<strong>' + (ok ? '✓ Correcto. ' : '✕ No exactamente. ') + '</strong><span style="color:var(--ink)">' + q.e + '</span> <button class="btn primary" type="button" id="qNext" style="margin-left:.4rem">' + (i === qs.length-1 ? 'Ver resultado' : 'Siguiente pregunta') + '</button>';
+      const n = document.getElementById('qNext'); n.focus();
+      n.addEventListener('click', () => { i++; render(); });
+    }));
+  }
+  render();
+})();
+</script>
+</body>
+</html>
